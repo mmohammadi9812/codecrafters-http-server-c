@@ -54,11 +54,32 @@ int main() {
 		return 1;
 	}
 	printf("Client connected\n");
-	char response[] = "HTTP/1.1 200 OK\r\n\r\n\r\n";
 
-	write(fd, response, sizeof(response));
+	char buf[5000];
+	int recv_bytes = recv(fd, buf, sizeof(buf), 0);
+	if (recv_bytes < 0) {
+		printf("Recv failed: %s \n", strerror(errno));
+		return 1;
+	}
 
-	close(server_fd);
+	char *request = strtok(buf, "\r\n");
+	char *verb = strtok(request, " ");
+	char *path = strtok(NULL, " ");
+
+	char *ok_response = "HTTP/1.1 200 OK\r\n\r\n\r\n";
+	char *not_found = "HTTP/1.1 404 Not Found\r\n\r\n";
+
+	if (strcmp(path, "/") != 0) {
+		send(fd, not_found, strlen(not_found), 0);
+	} else {
+		send(fd, ok_response, strlen(ok_response), 0);
+	}
+
+	int status = close(server_fd);
+	if (status < 0) {
+		printf("Close failed: %s \n", strerror(errno));
+		return 1;
+	}
 
 	return 0;
 }
