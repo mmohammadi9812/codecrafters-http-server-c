@@ -68,11 +68,24 @@ int main() {
 
 	char *ok_response = "HTTP/1.1 200 OK\r\n\r\n\r\n";
 	char *not_found = "HTTP/1.1 404 Not Found\r\n\r\n";
+	char *echo = "/echo/";
 
-	if (strcmp(path, "/") != 0) {
-		send(fd, not_found, strlen(not_found), 0);
-	} else {
+	int is_root = strcmp(path, "/") == 0;
+	int is_echo = strncmp(path, echo, strlen(echo)) == 0;
+	if (is_root) {
 		send(fd, ok_response, strlen(ok_response), 0);
+	} else if (is_echo) {
+		char *echo_str = path + (int)strlen(echo);
+		char *echo_stat = "HTTP/1.1 200 OK\r\n";
+		char echo_headers[1024];
+		sprintf(echo_headers, "Content-Type: text/plain\r\nContent-Length: %d\r\n\r\n", strlen(echo_str));
+		char echo_response[4095];
+		strcat(echo_response, echo_stat);
+		strcat(echo_response, echo_headers);
+		strcat(echo_response, echo_str);
+		send(fd, echo_response, strlen(echo_response), 0);
+	} else {
+		send(fd, not_found, strlen(not_found), 0);
 	}
 
 	int status = close(server_fd);
