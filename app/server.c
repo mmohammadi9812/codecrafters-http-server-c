@@ -176,6 +176,6 @@ void ua(int fd, char **path, char **headers)
 	char ua_len[255];
 	sprintf(ua_len, "Content-Type: text/plain\r\nContent-Length: %lu\r\n\r\n", strlen(user_agent));
 	char ua_response[4095];
-	sprintf(ua_response, "%s%s%s", ok_response, ua_len, user_agent);
+	sprintf(ua_response, "%s%s%s", ok_stat, ua_len, user_agent);
 	send(fd, ua_response, strlen(ua_response), 0);
 }
