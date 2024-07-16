@@ -32,7 +32,7 @@ setup() {
 
     master_address = (struct sockaddr_in){
         .sin_family = AF_INET,
-        .sin_port = htons(PORT),
+        .sin_port = htons(4221),
         .sin_addr = {htonl(INADDR_ANY)},
     };
 

@@ -9,11 +9,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "routes.h"
-
-#define PORT 4221
 
 static const int max_clients = 5;
 static const int max_headers = 16;

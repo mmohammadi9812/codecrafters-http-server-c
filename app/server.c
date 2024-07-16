@@ -10,7 +10,10 @@ main() {
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
 
+    clock_t begin = clock();
     setup();
+    clock_t end = clock();
+    printf("time for setup was: %Lg\n", (long double)(end -begin)/CLOCKS_PER_SEC);
 
     while (1) {
         FD_ZERO(&read_fds); /* clear the socket set */
