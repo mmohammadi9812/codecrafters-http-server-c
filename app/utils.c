@@ -77,7 +77,7 @@ parse_req(char* buffer, char** path, char** headers) {
             strcpy(headers[i++], s2);
         }
     } while (s2 != NULL && strlen(s2) > 0);
-    headers_len = i - 1;
+    headers_len = i;
     strtok(s1, " ");
     *path = strtok(NULL, " ");
 }
@@ -96,7 +96,7 @@ handle_request(int fd, char** buf) {
     } else if (is_echo) {
         echo(fd, &path);
     } else if (is_ua) {
-        ua(fd, &path, headers, headers_len);
+        ua(fd, headers, headers_len);
     } else {
         send(fd, not_found, strlen(not_found), 0);
     }

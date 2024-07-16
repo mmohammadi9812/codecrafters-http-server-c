@@ -10,7 +10,7 @@ static const char *ua_path = "/user-agent";
 
 void root(int);
 void echo(int, char**);
-void ua(int, char**, char**, int);
+void ua(int, char**, int);
 
 #endif
 

@@ -23,7 +23,7 @@ echo(int fd, char** path) {
 }
 
 void
-ua(int fd, char** path, char** headers, int headers_len) {
+ua(int fd, char** headers, int headers_len) {
     char* user_agent = NULL;
     for (int i = 0; i < headers_len; ++i) {
         if (strncasecmp(headers[i], user_agent_header, strlen(user_agent_header)) == 0) {
