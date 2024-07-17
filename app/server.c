@@ -1,19 +1,20 @@
 #include "utils.h"
 
-int conn_list[5];  /* Array of connected sockets so we know who we are talking to */
-fd_set read_fds;      /* Socket file descriptors we want to wake up for, using select() */
-int max_sd;     /* Highest #'d file descriptor, needed for select() */
+int conn_list[5]; /* Array of connected sockets so we know who we are talking to */
+fd_set read_fds;  /* Socket file descriptors we want to wake up for, using select() */
+int max_sd;       /* Highest #'d file descriptor, needed for select() */
 
 int
-main() {
+main(int argc, char** argv) {
     // Disable output buffering
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
 
-    clock_t begin = clock();
     setup();
-    clock_t end = clock();
-    printf("time for setup was: %Lg\n", (long double)(end -begin)/CLOCKS_PER_SEC);
+
+    if (argc > 1) {
+        parse_args(argc, argv);
+    }
 
     while (1) {
         FD_ZERO(&read_fds); /* clear the socket set */
@@ -46,6 +47,7 @@ main() {
                 printf("Accept failed: %s \n", strerror(errno));
                 return 1;
             }
+            set_nonblocking(fd);
             printf("Client connected\n");
 
             for (int i = 0; i < max_sd; ++i) { /* add the new socket to set */
@@ -59,7 +61,7 @@ main() {
         for (int i = 0; i < max_sd; ++i) { /* handle other sockets */
             int sd = conn_list[i];
             if (FD_ISSET(sd, &read_fds)) {
-                char *buf = calloc(1025, sizeof(char));
+                char* buf = calloc(1025, sizeof(char));
                 int recv_bytes = recv(sd, buf, 1025, 0);
                 if (recv_bytes < 0) {
                     printf("Recv failed: %s \n", strerror(errno));

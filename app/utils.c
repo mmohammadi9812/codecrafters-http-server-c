@@ -87,17 +87,27 @@ handle_request(int fd, char** buf) {
     char *path = calloc(255, sizeof(char)), **headers = calloc(max_headers, sizeof(char*));
     parse_req(*buf, &path, headers);
 
-    int is_root = strcmp(path, root_path) == 0;
-    int is_echo = strncmp(path, echo_path, strlen(echo_path)) == 0;
-    int is_ua = strcmp(path, ua_path) == 0;
+    int n = sizeof(routes) / sizeof(route), matched = 0;
+    for (int i = 0; i < n; ++i) {
+        if (strncmp(path, routes[i].name, strlen(routes[i].name)) == 0) {
+            routes[i].fun(fd, path, headers, headers_len, root_directory);
+            matched = 1;
+            break;
+        }
+    }
+    if (!matched) {
+        four04(fd);
+    }
+}
 
-    if (is_root) {
-        root(fd);
-    } else if (is_echo) {
-        echo(fd, &path);
-    } else if (is_ua) {
-        ua(fd, headers, headers_len);
-    } else {
-        send(fd, not_found, strlen(not_found), 0);
+void
+parse_args(int argc, char** argv) {
+    static struct option long_options[] = {{"directory", required_argument, 0, 'd'}, {0, 0, 0, 0}};
+    int opt = 0, long_index = 0;
+    while ((opt = getopt_long(argc, argv, ":d:", long_options, &long_index)) != -1) {
+        switch (opt) {
+            case 'd': root_directory = optarg; break;
+            default: printf("Usage: %s (--directory PATH)\n", argv[0]); exit(EXIT_FAILURE);
+        }
     }
 }
