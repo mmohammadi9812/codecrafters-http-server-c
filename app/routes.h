@@ -22,11 +22,14 @@ void echo(int, ...);
 void ua(int, ...);
 void file(int, ...);
 
+typedef enum { STATIC, DYNAMIC } route_type;
+
 typedef struct route {
     char* name;
     void (*fun)(int, ...);
+    route_type rt;
 } route;
 
-static route routes[5] = {{ECHO_P, echo}, {UA_P, ua}, {FILE_P, file}, {ROOT_P, root}};
+static route routes[4] = {{ECHO_P, echo, DYNAMIC}, {UA_P, ua, STATIC}, {FILE_P, file, DYNAMIC}, {ROOT_P, root, STATIC}};
 
 #endif

@@ -87,9 +87,12 @@ handle_request(int fd, char** buf) {
     char *path = calloc(255, sizeof(char)), **headers = calloc(max_headers, sizeof(char*));
     parse_req(*buf, &path, headers);
 
-    int n = sizeof(routes) / sizeof(route), matched = 0;
+    int n = sizeof(routes) / sizeof(route), matched = 0, SUCCESS = 0;
+
     for (int i = 0; i < n; ++i) {
-        if (strncmp(path, routes[i].name, strlen(routes[i].name)) == 0) {
+        char *a = path, *b = routes[i].name;
+        int match = routes[i].rt == DYNAMIC ? strncmp(a, b, strlen(b)) : strcmp(a, b);
+        if (match == SUCCESS) {
             routes[i].fun(fd, path, headers, headers_len, root_directory);
             matched = 1;
             break;
