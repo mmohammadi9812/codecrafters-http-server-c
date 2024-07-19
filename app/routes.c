@@ -131,7 +131,7 @@ void file_post(int fd, route_args args) {
     }
     my_chdir(args.base_dir);
     char *file_name = args.path + strlen(FILE_P);
-    write_file(file_name, buff_len+1, args.buffer);
+    write_file(file_name, buff_len, args.buffer);
 
     char* f_response = calloc(31, sizeof(char));
     sprintf(f_response, "%s\r\n", created_stat);
