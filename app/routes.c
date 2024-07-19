@@ -78,8 +78,8 @@ void read_file(FILE* f, long* size, char** buf) {
     *size = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    buf = calloc(*size + 1, sizeof(char));
-    fread(buf, *size, 1, f);
+    *buf = calloc(*size + 1, sizeof(char));
+    fread(*buf, sizeof(char), *size, f);
     fclose(f);
 }
 
@@ -110,7 +110,6 @@ file_get(int fd, route_args args) {
     char* f_response = calloc(fsize + 255, sizeof(char));
     sprintf(f_response, "%s%s%s", ok_stat, f_len_header, buf);
     send(fd, f_response, strlen(f_response), 0);
-    free(buf);
     free(f_response);
 }
 
