@@ -13,7 +13,7 @@
 #define FILE_P "/files/"
 
 static const char* ok_stat = "HTTP/1.1 200 OK\r\n";
-static const char* created_stat = "HTTP/1.1 201 OK\r\n";
+static const char* created_stat = "HTTP/1.1 201 Created\r\n";
 static const char* user_agent_header = "User-Agent: ";
 static const char* content_length_header = "Content-Length: ";
 static const char* content_type_header = "Content-Type: ";
