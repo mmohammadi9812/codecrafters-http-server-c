@@ -74,7 +74,7 @@ main(int argc, char** argv) {
                     }
                     conn_list[i] = 0;
                 } else {
-                    handle_request(sd, &buf);
+                    handle_request(sd, buf);
                     free(buf);
                 }
             }

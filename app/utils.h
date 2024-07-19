@@ -25,9 +25,9 @@ int headers_len; /* #' of headers in the request */
 struct sockaddr_in master_address, client_addr;
 char* root_directory;
 
-void handle_request(int, char**);
+void handle_request(int, char*);
 void parse_args(int, char**);
-void parse_req(char*, char**, char**);
+void parse_req(char**, char*, char*, char**);
 void set_nonblocking(int);
 void setup(void);
 

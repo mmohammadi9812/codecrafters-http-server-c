@@ -51,10 +51,10 @@ setup() {
 }
 
 void
-parse_req(char* buffer, char** path, char** headers) {
+parse_req(char** buffer, char* verb, char* path, char** headers) {
     /*
     * http request example:
-    GET                          // HTTP method
+    GET|POST                     // HTTP method
     /index.html                  // Request target
     HTTP/1.1                     // HTTP version
     \r\n                         // CRLF that marks the end of the request line
@@ -68,32 +68,36 @@ parse_req(char* buffer, char** path, char** headers) {
     for (int i = 0; i < max_headers; ++i) {
         headers[i] = calloc(127, sizeof(char));
     }
-    char *s1 = strtok(buffer, "\r\n"), *s2;
-    headers[0] = strtok(NULL, "\r\n");
-    int i = 1;
+    size_t verb_len = strcspn(*buffer, " ");
+    strncpy(verb, *buffer, verb_len);
+    size_t path_len = strcspn(*buffer+verb_len+1, " ");
+    strncpy(path, *buffer+verb_len+1, path_len);
+    *buffer = *buffer + strcspn(*buffer, "\r") + 2;
+    int i = 0, next_line = strcspn(*buffer, "\r");
     do {
-        s2 = strtok(NULL, "\r\n");
-        if (s2 != NULL && strlen(s2) > 0) {
-            strcpy(headers[i++], s2);
-        }
-    } while (s2 != NULL && strlen(s2) > 0);
+        strncpy(headers[i++], *buffer, next_line);
+        *buffer = *buffer + next_line + 2;
+        next_line = strcspn(*buffer, "\r");
+    } while(next_line);
+    *buffer = *buffer + 2; // last line has an extra \r\n
     headers_len = i;
-    strtok(s1, " ");
-    *path = strtok(NULL, " ");
 }
 
 void
-handle_request(int fd, char** buf) {
-    char *path = calloc(255, sizeof(char)), **headers = calloc(max_headers, sizeof(char*));
-    parse_req(*buf, &path, headers);
+handle_request(int fd, char* buf) {
+    char *verb = calloc(8, sizeof(char)), *path = calloc(255, sizeof(char));
+    char **headers = calloc(max_headers, sizeof(char*));
+    parse_req(&buf, verb, path, headers);
 
     int n = sizeof(routes) / sizeof(route), matched = 0, SUCCESS = 0;
 
     for (int i = 0; i < n; ++i) {
         char *a = path, *b = routes[i].name;
-        int match = routes[i].rt == DYNAMIC ? strncmp(a, b, strlen(b)) : strcmp(a, b);
-        if (match == SUCCESS) {
-            routes[i].fun(fd, path, headers, headers_len, root_directory);
+        int path_match = routes[i].rt == DYNAMIC ? strncmp(a, b, strlen(b)) : strcmp(a, b);
+        int verb_match = strcmp(verb, routes[i].verb == GET ? "GET" : "POST");
+        if (path_match == SUCCESS && verb_match == SUCCESS) {
+            route_args arg = {headers_len, path, root_directory, buf, headers};
+            routes[i].fun(fd, arg);
             matched = 1;
             break;
         }
