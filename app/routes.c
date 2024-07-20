@@ -82,9 +82,9 @@ send_response(response_args args) {
     char* headers = calloc(255, sizeof(char));
     char* encoding = args.is_gzip ? "Content-Encoding: gzip\r\n" : "";
     if (args.is_gzip) {
-        int inputSize = strlen(args.body), outputSize = inputSize + 1;
+        int inputSize = strlen(args.body), outputSize = inputSize * 3;
         char* output_buff = calloc(outputSize, sizeof(char));
-        compress((Bytef*)output_buff, &outputSize, (Bytef*)args.body, inputSize);
+        compress2((Bytef*)output_buff, &outputSize, (Bytef*)args.body, inputSize, 1);
         args.body = output_buff;
     }
     char* type = args.is_octet_stream ? "application/octet-stream" : "text/plain";
