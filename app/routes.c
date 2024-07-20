@@ -72,12 +72,13 @@ void file_post(int fd, route_args args) {
     send(fd, f_response, strlen(f_response), 0);
 }
 
-void send_response(int fd, int is_gzip, char* body) {
+void send_response(response_args args) {
     char *headers = calloc(255, sizeof(char));
-    char *encoding = is_gzip ? "Content-Encoding: gzip\r\n" : "";
-    body = is_gzip ? my_compress(body) : body;
-    sprintf(headers, "%sContent-Type: text/plain\r\nContent-Length: %lu\r\n\r\n", encoding, strlen(body));
-    char* response = calloc(strlen(headers)+strlen(body)+31, sizeof(char));
-    sprintf(response, "%s%s%s", ok_stat, headers, body);
-    send(fd, response, strlen(response), 0);
+    char *encoding = args.is_gzip ? "Content-Encoding: gzip\r\n" : "";
+    args.body = args.is_gzip ? my_compress(args.body) : args.body;
+    char *type = args.is_octet_stream ? "application/octet-stream" : "text/plain";
+    sprintf(headers, "%sContent-Type: %s\r\nContent-Length: %lu\r\n\r\n", encoding, type, strlen(args.body));
+    char* response = calloc(strlen(headers)+strlen(args.body)+31, sizeof(char));
+    sprintf(response, "%s%s%s", ok_stat, headers, args.body);
+    send(args.fd, response, strlen(response), 0);
 }

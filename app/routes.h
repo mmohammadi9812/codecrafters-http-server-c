@@ -25,6 +25,13 @@ typedef struct {
     char** headers;
 } route_args;
 
+typedef struct {
+    int fd;
+    int is_gzip;
+    int is_octet_stream;
+    char* body;
+} response_args;
+
 void send_response(int,int,char*);
 
 void four04(int);
