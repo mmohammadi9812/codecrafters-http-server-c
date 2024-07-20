@@ -70,15 +70,15 @@ parse_req(char** buffer, char* verb, char* path, char** headers) {
     }
     size_t verb_len = strcspn(*buffer, " ");
     strncpy(verb, *buffer, verb_len);
-    size_t path_len = strcspn(*buffer+verb_len+1, " ");
-    strncpy(path, *buffer+verb_len+1, path_len);
+    size_t path_len = strcspn(*buffer + verb_len + 1, " ");
+    strncpy(path, *buffer + verb_len + 1, path_len);
     *buffer = *buffer + strcspn(*buffer, "\r") + 2;
     int i = 0, next_line = strcspn(*buffer, "\r");
     do {
         strncpy(headers[i++], *buffer, next_line);
         *buffer = *buffer + next_line + 2;
         next_line = strcspn(*buffer, "\r");
-    } while(next_line);
+    } while (next_line);
     *buffer = *buffer + 2; // last line has an extra \r\n
     headers_len = i;
 }
@@ -86,7 +86,7 @@ parse_req(char** buffer, char* verb, char* path, char** headers) {
 void
 handle_request(int fd, char* buf) {
     char *verb = calloc(8, sizeof(char)), *path = calloc(255, sizeof(char));
-    char **headers = calloc(max_headers, sizeof(char*));
+    char** headers = calloc(max_headers, sizeof(char*));
     parse_req(&buf, verb, path, headers);
     int gzip = wants_gzip(headers_len, headers);
 
@@ -120,10 +120,24 @@ parse_args(int argc, char** argv) {
     }
 }
 
-int wants_gzip(int headers_len, char** headers) {
+int
+wants_gzip(int headers_len, char** headers) {
     for (int i = 0; i < headers_len; ++i) {
         if (strncmp(headers[i], accept_encoding, strlen(accept_encoding)) == 0) {
-            return strncmp(headers[i]+strlen(accept_encoding), gzip, strlen(gzip)) == 0;
+            char* header_val = headers[i] + strlen(accept_encoding);
+            if (strchr(header_val, ',') == NULL) {
+                return strncmp(headers[i] + strlen(accept_encoding), gzip, strlen(gzip)) == 0;
+            }
+            int is_gzip = strncmp(header_val + strcspn(header_val, ","), gzip, strlen(gzip)) == 0;
+            while (!is_gzip && strlen(header_val) > 0) {
+                header_val += strcspn(header_val, ",") + 1;
+                header_val = ltrim(header_val);
+                is_gzip = strncmp(header_val, gzip, strlen(gzip)) == 0;
+                if (is_gzip) {
+                    break;
+                }
+            }
+            return is_gzip;
         }
     }
     return 0;

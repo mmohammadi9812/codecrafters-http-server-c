@@ -38,12 +38,12 @@ ua(int fd, route_args args) {
 void
 file_get(int fd, route_args args) {
     char* fname = args.path + (int)strlen(FILE_P);
-    FILE *f = find_file(args.base_dir, fname);
+    FILE* f = find_file(args.base_dir, fname);
     if (f == NULL) {
         four04(fd);
         return;
     }
-    char *buf;
+    char* buf;
     long fsize;
     read_file(f, &fsize, &buf);
 
@@ -51,14 +51,16 @@ file_get(int fd, route_args args) {
     send_response(arg);
 }
 
-void file_post(int fd, route_args args) {
+void
+file_post(int fd, route_args args) {
     char* fname = args.path + (int)strlen(FILE_P);
     int buff_len = -1;
     for (int i = 0; i < args.headers_len; ++i) {
-        char *curr_head = args.headers[i];
+        char* curr_head = args.headers[i];
         int is_length = strncmp(curr_head, content_length_header, strlen(content_length_header)) == 0;
-        if (!is_length)
+        if (!is_length) {
             continue;
+        }
         buff_len = atoi(args.headers[i] + strlen(content_length_header));
         break;
     }
@@ -67,7 +69,7 @@ void file_post(int fd, route_args args) {
         return;
     }
     my_chdir(args.base_dir);
-    char *file_name = args.path + strlen(FILE_P);
+    char* file_name = args.path + strlen(FILE_P);
     write_file(file_name, buff_len, args.buffer);
 
     char* f_response = calloc(31, sizeof(char));
@@ -75,13 +77,14 @@ void file_post(int fd, route_args args) {
     send(fd, f_response, strlen(f_response), 0);
 }
 
-void send_response(response_args args) {
-    char *headers = calloc(255, sizeof(char));
-    char *encoding = args.is_gzip ? "Content-Encoding: gzip\r\n" : "";
+void
+send_response(response_args args) {
+    char* headers = calloc(255, sizeof(char));
+    char* encoding = args.is_gzip ? "Content-Encoding: gzip\r\n" : "";
     args.body = args.is_gzip ? my_compress(args.body) : args.body;
-    char *type = args.is_octet_stream ? "application/octet-stream" : "text/plain";
+    char* type = args.is_octet_stream ? "application/octet-stream" : "text/plain";
     sprintf(headers, "%sContent-Type: %s\r\nContent-Length: %lu\r\n\r\n", encoding, type, strlen(args.body));
-    char* response = calloc(strlen(headers)+strlen(args.body)+31, sizeof(char));
+    char* response = calloc(strlen(headers) + strlen(args.body) + 31, sizeof(char));
     sprintf(response, "%s%s%s", ok_stat, headers, args.body);
     send(args.fd, response, strlen(response), 0);
 }
