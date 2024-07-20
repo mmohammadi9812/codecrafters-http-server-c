@@ -17,7 +17,8 @@ void
 echo(int fd, route_args args) {
     char* echo_str = args.path + (int)strlen(ECHO_P);
 
-    send_response(fd, args.wants_gzip, echo_str);
+    response_args arg = {fd, 0, args.wants_gzip, echo_str};
+    send_response(arg);
 }
 
 void
@@ -30,7 +31,8 @@ ua(int fd, route_args args) {
         }
     }
 
-    send_response(fd, args.wants_gzip, user_agent);
+    response_args arg = {fd, 0, args.wants_gzip, user_agent};
+    send_response(arg);
 }
 
 void
@@ -45,7 +47,8 @@ file_get(int fd, route_args args) {
     long fsize;
     read_file(f, &fsize, &buf);
 
-    send_response(fd, args.wants_gzip, buf);
+    response_args arg = {fd, 1, args.wants_gzip, buf};
+    send_response(arg);
 }
 
 void file_post(int fd, route_args args) {

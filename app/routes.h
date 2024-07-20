@@ -32,7 +32,7 @@ typedef struct {
     char* body;
 } response_args;
 
-void send_response(int,int,char*);
+void send_response(response_args);
 
 void four04(int);
 void root(int, route_args);
