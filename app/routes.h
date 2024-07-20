@@ -27,8 +27,8 @@ typedef struct {
 
 typedef struct {
     int fd;
-    int is_gzip;
     int is_octet_stream;
+    int is_gzip;
     char* body;
 } response_args;
 
