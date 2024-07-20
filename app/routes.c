@@ -1,9 +1,3 @@
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-
 #include "routes.h"
 
 void
@@ -22,13 +16,8 @@ root(int fd, route_args _) {
 void
 echo(int fd, route_args args) {
     char* echo_str = args.path + (int)strlen(ECHO_P);
-    char* echo_headers = calloc(255, sizeof(char));
-    sprintf(echo_headers, "Content-Type: text/plain\r\nContent-Length: %lu\r\n\r\n", strlen(echo_str));
-    char* echo_response = calloc(1025, sizeof(char));
-    sprintf(echo_response, "%s%s%s", ok_stat, echo_headers, echo_str);
-    send(fd, echo_response, strlen(echo_response), 0);
-    free(echo_headers);
-    free(echo_response);
+
+    send_response(fd, args.wants_gzip, echo_str);
 }
 
 void
@@ -40,57 +29,8 @@ ua(int fd, route_args args) {
             break;
         }
     }
-    char ua_len[255];
-    sprintf(ua_len, "Content-Type: text/plain\r\nContent-Length: %lu\r\n\r\n", strlen(user_agent));
-    char ua_response[4095];
-    sprintf(ua_response, "%s%s%s", ok_stat, ua_len, user_agent);
-    send(fd, ua_response, strlen(ua_response), 0);
-}
 
-DIR* my_chdir(char* directory) {
-    DIR* dp;
-    if ((dp = opendir(directory)) == NULL) {
-        printf("Failed to open %s: %s\n", directory, strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-    chdir(directory);
-    return dp;
-}
-
-FILE* find_file(char* base_dir, char* name) {
-    struct dirent* entry;
-    DIR* dp = my_chdir(base_dir);
-    int found = 0;
-    while ((entry = readdir(dp)) != NULL) {
-        if (strncmp(entry->d_name, name, strlen(name)) == 0) {
-            found = 1;
-            break;
-        }
-    }
-    if (!found) {
-        return NULL;
-    }
-    return fopen(entry->d_name, "r");
-}
-
-void read_file(FILE* f, long* size, char** buf) {
-    fseek(f, 0, SEEK_END);
-    *size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    *buf = calloc(*size + 1, sizeof(char));
-    fread(*buf, sizeof(char), *size, f);
-    fclose(f);
-}
-
-void write_file(char* file_name, int size, char *buffer) {
-    FILE* f = fopen(file_name, "w");
-    if (f == NULL) {
-        printf("Failed to open file %s for writing\n", file_name);
-        exit(EXIT_FAILURE);
-    }
-    fwrite(buffer, sizeof(char), size, f);
-    fclose(f);
+    send_response(fd, args.wants_gzip, user_agent);
 }
 
 void
@@ -105,12 +45,7 @@ file_get(int fd, route_args args) {
     long fsize;
     read_file(f, &fsize, &buf);
 
-    char f_len_header[255];
-    sprintf(f_len_header, "Content-Type: application/octet-stream\r\nContent-Length: %lu\r\n\r\n", fsize);
-    char* f_response = calloc(fsize + 255, sizeof(char));
-    sprintf(f_response, "%s%s%s", ok_stat, f_len_header, buf);
-    send(fd, f_response, strlen(f_response), 0);
-    free(f_response);
+    send_response(fd, args.wants_gzip, buf);
 }
 
 void file_post(int fd, route_args args) {
@@ -135,4 +70,14 @@ void file_post(int fd, route_args args) {
     char* f_response = calloc(31, sizeof(char));
     sprintf(f_response, "%s\r\n", created_stat);
     send(fd, f_response, strlen(f_response), 0);
+}
+
+void send_response(int fd, int is_gzip, char* body) {
+    char *headers = calloc(255, sizeof(char));
+    char *encoding = is_gzip ? "Content-Encoding: gzip\r\n" : "";
+    body = is_gzip ? my_compress(body) : body;
+    sprintf(headers, "%sContent-Type: text/plain\r\nContent-Length: %lu\r\n\r\n", encoding, strlen(body));
+    char* response = calloc(strlen(headers)+strlen(body)+31, sizeof(char));
+    sprintf(response, "%s%s%s", ok_stat, headers, body);
+    send(fd, response, strlen(response), 0);
 }

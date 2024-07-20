@@ -17,6 +17,8 @@
 
 static const int max_clients = 5;
 static const int max_headers = 16;
+static const char* accept_encoding = "Accept-Encoding: ";
+static const char* gzip = "gzip";
 
 int server_fd; /* The socket file descriptor for our "listening" socket */
 
@@ -30,5 +32,6 @@ void parse_args(int, char**);
 void parse_req(char**, char*, char*, char**);
 void set_nonblocking(int);
 void setup(void);
+int wants_gzip(int,char**);
 
 #endif

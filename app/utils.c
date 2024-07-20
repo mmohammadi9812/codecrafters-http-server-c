@@ -88,6 +88,7 @@ handle_request(int fd, char* buf) {
     char *verb = calloc(8, sizeof(char)), *path = calloc(255, sizeof(char));
     char **headers = calloc(max_headers, sizeof(char*));
     parse_req(&buf, verb, path, headers);
+    int gzip = wants_gzip(headers_len, headers);
 
     int n = sizeof(routes) / sizeof(route), matched = 0, SUCCESS = 0;
 
@@ -96,7 +97,7 @@ handle_request(int fd, char* buf) {
         int path_match = routes[i].rt == DYNAMIC ? strncmp(a, b, strlen(b)) : strcmp(a, b);
         int verb_match = strcmp(verb, routes[i].verb == GET ? "GET" : "POST");
         if (path_match == SUCCESS && verb_match == SUCCESS) {
-            route_args arg = {headers_len, path, root_directory, buf, headers};
+            route_args arg = {headers_len, gzip, path, root_directory, buf, headers};
             routes[i].fun(fd, arg);
             matched = 1;
             break;
@@ -117,4 +118,13 @@ parse_args(int argc, char** argv) {
             default: printf("Usage: %s (--directory PATH)\n", argv[0]); exit(EXIT_FAILURE);
         }
     }
+}
+
+int wants_gzip(int headers_len, char** headers) {
+    for (int i = 0; i < headers_len; ++i) {
+        if (strncmp(headers[i], accept_encoding, strlen(accept_encoding)) == 0) {
+            return strncmp(headers[i]+strlen(accept_encoding), gzip, strlen(gzip)) == 0;
+        }
+    }
+    return 0;
 }
