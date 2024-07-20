@@ -81,7 +81,12 @@ void
 send_response(response_args args) {
     char* headers = calloc(255, sizeof(char));
     char* encoding = args.is_gzip ? "Content-Encoding: gzip\r\n" : "";
-    args.body = args.is_gzip ? my_compress(args.body) : args.body;
+    if (args.is_gzip) {
+        int inputSize = strlen(args.body), outputSize = inputSize + 1;
+        char* output_buff = calloc(outputSize, sizeof(char));
+        compress((Bytef*)output_buff, &outputSize, (Bytef*)args.body, inputSize);
+        args.body = output_buff;
+    }
     char* type = args.is_octet_stream ? "application/octet-stream" : "text/plain";
     sprintf(headers, "%sContent-Type: %s\r\nContent-Length: %lu\r\n\r\n", encoding, type, strlen(args.body));
     char* response = calloc(strlen(headers) + strlen(args.body) + 31, sizeof(char));

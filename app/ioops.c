@@ -51,30 +51,30 @@ write_file(char* file_name, int size, char* buffer) {
 }
 
 char*
-my_compress(char* input) {
-    int size = strlen(input);
-    char* output = calloc(size + 1, sizeof(char));
-    z_stream out_stream;
-    out_stream.zalloc = Z_NULL;
-    out_stream.zfree = Z_NULL;
-    out_stream.opaque = Z_NULL;
-
-    out_stream.avail_in = (uInt)strlen(input) + 1; // size of input, string + terminator
-    out_stream.next_in = (Bytef*)input;            // input char array
-    out_stream.avail_out = (uInt)sizeof(output);   // size of output
-    out_stream.next_out = (Bytef*)output;          // output char array
-
-    // the actual compression work.
-    deflateInit(&out_stream, Z_BEST_COMPRESSION);
-    deflate(&out_stream, Z_FINISH);
-    deflateEnd(&out_stream);
-    return output;
-}
-
-char*
 ltrim(char* s) {
     while (isspace(*s)) {
         s++;
     }
     return s;
+}
+
+char*
+my_compress(char* input) {
+    int inputSize = strlen(input), outputSize = inputSize + 1;
+    char* output = calloc(outputSize, sizeof(char));
+    z_stream zs;
+    zs.zalloc = Z_NULL;
+    zs.zfree = Z_NULL;
+    zs.opaque = Z_NULL;
+    zs.avail_in = (uInt)inputSize;
+    zs.next_in = (Bytef*)input;
+    zs.avail_out = (uInt)outputSize;
+    zs.next_out = (Bytef*)output;
+
+    // hard to believe they don't have a macro for gzip encoding, "Add 16" is the best thing zlib can do:
+    // "Add 16 to windowBits to write a simple gzip header and trailer around the compressed data instead of a zlib wrapper"
+    deflateInit2(&zs, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 | 16, 8, Z_DEFAULT_STRATEGY);
+    deflate(&zs, Z_FINISH);
+    deflateEnd(&zs);
+    return output;
 }
