@@ -97,7 +97,7 @@ handle_request(int fd, char* buf) {
         int path_match = routes[i].rt == DYNAMIC ? strncmp(a, b, strlen(b)) : strcmp(a, b);
         int verb_match = strcmp(verb, routes[i].verb == GET ? "GET" : "POST");
         if (path_match == SUCCESS && verb_match == SUCCESS) {
-            route_args arg = {headers_len, gzip, path, root_directory, buf, headers};
+            request arg = {headers_len, gzip, path, root_directory, buf, headers};
             routes[i].fun(fd, arg);
             matched = 1;
             break;

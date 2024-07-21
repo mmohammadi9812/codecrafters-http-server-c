@@ -23,23 +23,23 @@ typedef struct {
     char* base_dir;
     char* buffer;
     char** headers;
-} route_args;
+} request;
 
 typedef struct {
     int fd;
     int is_octet_stream;
     int is_gzip;
     char* body;
-} response_args;
+} response;
 
-void send_response(response_args);
+void send_response(response);
 
 void four04(int);
-void root(int, route_args);
-void echo(int, route_args);
-void ua(int, route_args);
-void file_get(int, route_args);
-void file_post(int, route_args);
+void root(int, request);
+void echo(int, request);
+void ua(int, request);
+void file_get(int, request);
+void file_post(int, request);
 
 typedef enum { STATIC, DYNAMIC } route_type;
 
@@ -47,7 +47,7 @@ typedef enum { GET, POST } route_verb;
 
 typedef struct route {
     char* name;
-    void (*fun)(int, route_args);
+    void (*fun)(int, request);
     route_type rt;
     route_verb verb;
 } route;
