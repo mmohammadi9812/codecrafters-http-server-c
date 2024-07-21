@@ -48,3 +48,6 @@ Potential areas for enhancement include:
 ## Contributions
 
 Feedback and contributions are welcome! Feel free to open issues or submit pull requests to help improve this project.
+
+## License
+For more information about licensing, see the `LICENSE` file
