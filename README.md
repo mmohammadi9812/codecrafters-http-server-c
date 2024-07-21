@@ -1,38 +1,50 @@
-[![progress-banner](https://backend.codecrafters.io/progress/http-server/d66d0dea-5a65-4260-bfec-f16244b59e15)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# HTTP Server Challenge
 
-This is a starting point for C solutions to the
-["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+This repository contains my attempt to solve the ["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview) using the C programming language.
 
-[HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) is the
-protocol that powers the web. In this challenge, you'll build a HTTP/1.1 server
-that is capable of serving multiple clients.
+## Project Overview
 
-Along the way you'll learn about TCP servers,
-[HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html),
-and more.
+In this challenge, I successfully built an HTTP/1.1 server capable of serving multiple clients simultaneously. This project provided an excellent opportunity to deepen my understanding of network programming and web protocols.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Key Learning Points
 
-# Passing the first stage
+Throughout the development process, I gained valuable insights into:
 
-The entry point for your HTTP server implementation is in `app/server.c`. Study
-and uncomment the relevant code, and push your changes to pass the first stage:
+1. TCP server implementation
+2. [HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html) and structure
+3. Concurrent client handling
+4. File I/O operations in C
+5. Command-line argument parsing
 
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
-```
+## Features
 
-Time to move on to the next stage!
+- HTTP/1.1 protocol support
+- Multi-client handling
+- Basic file read and write operations
+- Directory-based file serving
 
-# Stage 2 & beyond
+## Running the Server
 
-Note: This section is for stages 2 and beyond.
+To run this HTTP server on your local machine, follow these steps:
 
-1. Ensure you have `gcc` installed locally
-1. Run `./your_server.sh` to run your program, which is implemented in
-   `app/server.c`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+1. Ensure you have `gcc` (GNU Compiler Collection) installed on your system.
+2. Clone this repository to your local machine.
+3. Navigate to the project directory in your terminal.
+4. Run the server using the following command: `./your_server.sh`
+5. To enable file read and write operations, use the `--directory` flag followed by the path to the directory you want to serve: `./your_server.sh --directory /path/to/your/directory`
+
+## Testing
+
+You can test the server using tools like `curl` or by accessing it through a web browser. The server should respond to various HTTP methods and serve files from the specified directory when applicable.
+
+## Future Improvements
+
+Potential areas for enhancement include:
+- Implementing more HTTP methods
+- Adding support for HTTPS
+- Improving error handling and logging
+- Optimizing performance for high concurrency
+
+## Contributions
+
+Feedback and contributions are welcome! Feel free to open issues or submit pull requests to help improve this project.
