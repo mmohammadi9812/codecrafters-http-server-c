@@ -14,7 +14,7 @@ DIR* my_chdir(char*);
 FILE* find_file(char* base_dir, char* name);
 void read_file(FILE*, long*, char**);
 void write_file(char*, int, char*);
-char* my_compress(char*);
 char* ltrim(char*);
+void gzip_compress(const char*, size_t, unsigned char**, size_t*);
 
 #endif

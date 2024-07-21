@@ -81,15 +81,22 @@ void
 send_response(response_args args) {
     char* headers = calloc(255, sizeof(char));
     char* encoding = args.is_gzip ? "Content-Encoding: gzip\r\n" : "";
+    char* output_buffer;
+    size_t output_size = strlen(args.body);
     if (args.is_gzip) {
-        int inputSize = strlen(args.body), outputSize = inputSize * 3;
-        char* output_buff = calloc(outputSize, sizeof(char));
-        compress2((Bytef*)output_buff, &outputSize, (Bytef*)args.body, inputSize, 1);
-        args.body = output_buff;
+        int input_size = strlen(args.body);
+        output_buffer = calloc(2 * strlen(args.body), sizeof(char));
+        gzip_compress(args.body, strlen(args.body), &output_buffer, &output_size);
     }
     char* type = args.is_octet_stream ? "application/octet-stream" : "text/plain";
-    sprintf(headers, "%sContent-Type: %s\r\nContent-Length: %lu\r\n\r\n", encoding, type, strlen(args.body));
-    char* response = calloc(strlen(headers) + strlen(args.body) + 31, sizeof(char));
-    sprintf(response, "%s%s%s", ok_stat, headers, args.body);
-    send(args.fd, response, strlen(response), 0);
+    sprintf(headers, "%sContent-Type: %s\r\nContent-Length: %lu\r\n\r\n", encoding, type, output_size);
+    char* response = calloc(8192, sizeof(char));
+    if (args.is_gzip) {
+        sprintf(response, "%s%s", ok_stat, headers);
+        send(args.fd, response, strlen(response), 0);
+        send(args.fd, output_buffer, output_size, 0);
+    } else {
+        sprintf(response, "%s%s%s", ok_stat, headers, args.body);
+        send(args.fd, response, strlen(response), 0);
+    }
 }

@@ -58,23 +58,44 @@ ltrim(char* s) {
     return s;
 }
 
-char*
-my_compress(char* input) {
-    int inputSize = strlen(input), outputSize = inputSize + 1;
-    char* output = calloc(outputSize, sizeof(char));
-    z_stream zs;
-    zs.zalloc = Z_NULL;
-    zs.zfree = Z_NULL;
-    zs.opaque = Z_NULL;
-    zs.avail_in = (uInt)inputSize;
-    zs.next_in = (Bytef*)input;
-    zs.avail_out = (uInt)outputSize;
-    zs.next_out = (Bytef*)output;
+void
+gzip_compress(const char* input, size_t input_size, unsigned char** output, size_t* output_size) {
+    z_stream strm;
+    int ret;
+    unsigned char out_buffer[8192];
 
-    // hard to believe they don't have a macro for gzip encoding, "Add 16" is the best thing zlib can do:
-    // "Add 16 to windowBits to write a simple gzip header and trailer around the compressed data instead of a zlib wrapper"
-    deflateInit2(&zs, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 | 16, 8, Z_DEFAULT_STRATEGY);
-    deflate(&zs, Z_FINISH);
-    deflateEnd(&zs);
-    return output;
+    *output = NULL;
+    *output_size = 0;
+
+    memset(&strm, 0, sizeof(strm));
+    ret = deflateInit2(&strm, Z_BEST_COMPRESSION, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
+    if (ret != Z_OK) {
+        perror("[-] deflateInit2");
+    }
+
+    strm.next_in = (unsigned char*)input;
+    strm.avail_in = input_size;
+
+    do {
+        strm.next_out = out_buffer;
+        strm.avail_out = sizeof(out_buffer);
+
+        ret = deflate(&strm, Z_FINISH);
+        if (ret != Z_STREAM_END && ret != Z_OK && ret != Z_BUF_ERROR) {
+            deflateEnd(&strm);
+            perror("[-] deflate != Z_OK");
+        }
+
+        size_t have = sizeof(out_buffer) - strm.avail_out;
+        *output = realloc(*output, *output_size + have);
+        if (*output == NULL) {
+            deflateEnd(&strm);
+            perror("[-] realloc");
+        }
+
+        memcpy(*output + *output_size, out_buffer, have);
+        *output_size += have;
+    } while (strm.avail_out == 0);
+
+    deflateEnd(&strm);
 }
